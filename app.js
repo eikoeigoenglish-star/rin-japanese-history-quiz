@@ -174,6 +174,7 @@ function bindStaticEvents() {
   document.getElementById("start-btn").addEventListener("click", startExam);
   document.getElementById("next-btn").addEventListener("click", nextQuestion);
   document.getElementById("back-to-start-btn").addEventListener("click", backToStart);
+  document.getElementById("reset-progress-btn").addEventListener("click", resetProgress);
   document.getElementById("custom-distribution").addEventListener("click", handleCustomCounterClick);
   document.addEventListener("change", handleSettingsChange);
   document.addEventListener("keydown", handleQuizKeydown);
@@ -1097,6 +1098,31 @@ function updateStatusFilterCounts(scopePool) {
       output.textContent = counts[status.id].toLocaleString("ja-JP");
     }
   });
+}
+
+
+function resetProgress() {
+  const counts = countByProgressStatus(state.allQuestions);
+  const learnedCount = state.allQuestions.length - counts.new;
+
+  if (learnedCount === 0) {
+    return;
+  }
+
+  const ok = window.confirm(
+    `${learnedCount.toLocaleString("ja-JP")}問分の習得状況をすべて消して、全問を未出題に戻します。よろしいですか。`
+  );
+
+  if (!ok) {
+    return;
+  }
+
+  state.progress = {};
+  state.progressCommitted = false;
+  state.progressTransitions = {};
+  saveProgress();
+  updateMasterySummary();
+  updateStartState();
 }
 
 function updateQuestionProgress(questionId, isCorrect) {

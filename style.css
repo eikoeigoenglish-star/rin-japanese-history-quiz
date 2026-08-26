@@ -972,6 +972,12 @@ input {
 /* =========================
    習得状況・出題状態
 ========================= */
+
+.mastery-reset-btn {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .mastery-summary {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
