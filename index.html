@@ -22,6 +22,38 @@
         <p id="data-status" class="data-status" aria-live="polite">問題データを読み込んでいます...</p>
       </header>
 
+      <section class="panel" aria-labelledby="mastery-heading">
+        <div class="panel-head">
+          <h2 id="mastery-heading" class="panel-title">習得状況</h2>
+          <p class="panel-note">全問題の学習履歴</p>
+        </div>
+        <p class="panel-desc">正解を重ねるとヒット → ダブル → トリプルと進み、不正解になるとミスへ戻ります。未回答は状態を変更しません。</p>
+
+        <div id="mastery-summary" class="mastery-summary" aria-live="polite">
+          <div class="mastery-stat" data-status="new">
+            <span class="mastery-label">未出題</span>
+            <strong id="mastery-count-new" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="miss">
+            <span class="mastery-label">ミス</span>
+            <strong id="mastery-count-miss" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="hit">
+            <span class="mastery-label">ヒット</span>
+            <strong id="mastery-count-hit" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="double">
+            <span class="mastery-label">ダブル</span>
+            <strong id="mastery-count-double" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="triple">
+            <span class="mastery-label">トリプル</span>
+            <strong id="mastery-count-triple" class="mastery-count">0</strong>
+          </div>
+        </div>
+      </section>
+
+
       <section class="panel" aria-labelledby="profile-heading">
         <div class="panel-head">
           <h2 id="profile-heading" class="panel-title">難易度配分</h2>
@@ -118,37 +150,6 @@
         </div>
         <p class="panel-desc">原則100問単位です。最後の端数は直前の問題セットにまとめています。</p>
         <div id="problem-set-list" class="problem-set-list" aria-live="polite"></div>
-      </section>
-
-      <section class="panel" aria-labelledby="mastery-heading">
-        <div class="panel-head">
-          <h2 id="mastery-heading" class="panel-title">習得状況</h2>
-          <p class="panel-note">全問題の学習履歴</p>
-        </div>
-        <p class="panel-desc">正解を重ねるとヒット → ダブル → トリプルと進み、不正解になるとミスへ戻ります。未回答は状態を変更しません。</p>
-
-        <div id="mastery-summary" class="mastery-summary" aria-live="polite">
-          <div class="mastery-stat" data-status="new">
-            <span class="mastery-label">未出題</span>
-            <strong id="mastery-count-new" class="mastery-count">0</strong>
-          </div>
-          <div class="mastery-stat" data-status="miss">
-            <span class="mastery-label">ミス</span>
-            <strong id="mastery-count-miss" class="mastery-count">0</strong>
-          </div>
-          <div class="mastery-stat" data-status="hit">
-            <span class="mastery-label">ヒット</span>
-            <strong id="mastery-count-hit" class="mastery-count">0</strong>
-          </div>
-          <div class="mastery-stat" data-status="double">
-            <span class="mastery-label">ダブル</span>
-            <strong id="mastery-count-double" class="mastery-count">0</strong>
-          </div>
-          <div class="mastery-stat" data-status="triple">
-            <span class="mastery-label">トリプル</span>
-            <strong id="mastery-count-triple" class="mastery-count">0</strong>
-          </div>
-        </div>
       </section>
 
       <section class="panel" aria-labelledby="status-heading">
