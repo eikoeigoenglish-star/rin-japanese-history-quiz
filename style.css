@@ -968,12 +968,134 @@ input {
   margin: 0;
 }
 
+
+/* =========================
+   習得状況・出題状態
+========================= */
+.mastery-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mastery-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.mastery-label {
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: 0.86rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mastery-count {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mastery-stat[data-status="miss"] .mastery-count {
+  color: var(--ng);
+}
+
+.mastery-stat[data-status="hit"] .mastery-count,
+.mastery-stat[data-status="double"] .mastery-count,
+.mastery-stat[data-status="triple"] .mastery-count {
+  color: var(--gold-bright);
+}
+
+.status-chip-group {
+  gap: 10px;
+}
+
+.status-chip {
+  min-width: 126px;
+  gap: 10px;
+}
+
+.status-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2em;
+  min-height: 2em;
+  padding: 0 0.45em;
+  color: var(--text-faint);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-chip-group input:checked + .status-chip .status-count {
+  color: var(--gold-bright);
+  background: rgba(201, 168, 106, 0.13);
+}
+
+/* 結果画面の習得状況遷移 */
+.progress-transition {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.progress-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 3px 10px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+
+.progress-tag.is-miss {
+  color: var(--ng);
+  border-color: rgba(239, 154, 154, 0.45);
+}
+
+.progress-tag.is-hit,
+.progress-tag.is-double,
+.progress-tag.is-triple {
+  color: var(--gold-bright);
+  border-color: var(--gold-line);
+  background: var(--gold-dim);
+}
+
+.progress-arrow {
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+
 /* =========================
    レスポンシブ
 ========================= */
 @media (max-width: 760px) {
   .profile-grid {
     grid-template-columns: 1fr;
+  }
+
+  .mastery-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .profile-card {
@@ -986,6 +1108,10 @@ input {
 }
 
 @media (max-width: 640px) {
+  .mastery-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .chip {
     flex: 1 1 calc(33.333% - 7px);
     min-width: 0;
@@ -1046,6 +1172,14 @@ input {
 }
 
 @media (max-width: 430px) {
+  .mastery-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .mastery-stat {
+    padding: 10px 12px;
+  }
+
   .chip {
     flex-basis: calc(50% - 5px);
   }

@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#101014">
   <meta name="description" content="歴史検定の日本史対策に使える四択トレーニングです。難易度、時代、問題セット、出題問数を選んで学習できます。">
   <title>歴史検定 日本史 四択トレーニング</title>
-  <link rel="stylesheet" href="style.css?v=1.0.0">
+  <link rel="stylesheet" href="style.css?v=1.1.0">
 </head>
 <body>
   <div class="app">
@@ -18,7 +18,7 @@
           歴史検定 日本史
           <span class="app-title-sub">四択トレーニング</span>
         </h1>
-        <p class="app-lead">難易度・時代・問題セット・出題問数を選んで開始します。</p>
+        <p class="app-lead">難易度・時代・問題セット・出題状態・出題問数を選んで開始します。</p>
         <p id="data-status" class="data-status" aria-live="polite">問題データを読み込んでいます...</p>
       </header>
 
@@ -118,6 +118,77 @@
         </div>
         <p class="panel-desc">原則100問単位です。最後の端数は直前の問題セットにまとめています。</p>
         <div id="problem-set-list" class="problem-set-list" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="mastery-heading">
+        <div class="panel-head">
+          <h2 id="mastery-heading" class="panel-title">習得状況</h2>
+          <p class="panel-note">全問題の学習履歴</p>
+        </div>
+        <p class="panel-desc">正解を重ねるとヒット → ダブル → トリプルと進み、不正解になるとミスへ戻ります。未回答は状態を変更しません。</p>
+
+        <div id="mastery-summary" class="mastery-summary" aria-live="polite">
+          <div class="mastery-stat" data-status="new">
+            <span class="mastery-label">未出題</span>
+            <strong id="mastery-count-new" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="miss">
+            <span class="mastery-label">ミス</span>
+            <strong id="mastery-count-miss" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="hit">
+            <span class="mastery-label">ヒット</span>
+            <strong id="mastery-count-hit" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="double">
+            <span class="mastery-label">ダブル</span>
+            <strong id="mastery-count-double" class="mastery-count">0</strong>
+          </div>
+          <div class="mastery-stat" data-status="triple">
+            <span class="mastery-label">トリプル</span>
+            <strong id="mastery-count-triple" class="mastery-count">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="status-heading">
+        <div class="panel-head">
+          <h2 id="status-heading" class="panel-title">出題状態</h2>
+          <p class="panel-note">複数選択可</p>
+        </div>
+        <p class="panel-desc">選択した時代・問題セットの中から、指定した習得状態だけを出題対象にします。</p>
+
+        <div class="chip-group status-chip-group" role="group" aria-labelledby="status-heading">
+          <input type="checkbox" id="status-new" name="progress-status" value="new" checked>
+          <label class="chip status-chip" for="status-new">
+            <span>未出題</span>
+            <span id="status-count-new" class="status-count">0</span>
+          </label>
+
+          <input type="checkbox" id="status-miss" name="progress-status" value="miss" checked>
+          <label class="chip status-chip" for="status-miss">
+            <span>ミス</span>
+            <span id="status-count-miss" class="status-count">0</span>
+          </label>
+
+          <input type="checkbox" id="status-hit" name="progress-status" value="hit" checked>
+          <label class="chip status-chip" for="status-hit">
+            <span>ヒット</span>
+            <span id="status-count-hit" class="status-count">0</span>
+          </label>
+
+          <input type="checkbox" id="status-double" name="progress-status" value="double" checked>
+          <label class="chip status-chip" for="status-double">
+            <span>ダブル</span>
+            <span id="status-count-double" class="status-count">0</span>
+          </label>
+
+          <input type="checkbox" id="status-triple" name="progress-status" value="triple" checked>
+          <label class="chip status-chip" for="status-triple">
+            <span>トリプル</span>
+            <span id="status-count-triple" class="status-count">0</span>
+          </label>
+        </div>
       </section>
 
       <section class="panel" aria-labelledby="count-heading">
@@ -220,6 +291,6 @@
     </footer>
   </div>
 
-  <script src="app.js?v=1.0.0"></script>
+  <script src="app.js?v=1.1.0"></script>
 </body>
 </html>

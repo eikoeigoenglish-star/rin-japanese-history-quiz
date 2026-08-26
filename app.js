@@ -55,6 +55,15 @@ const FALLBACK_ORDER = {
 
 const CHOICE_MARKERS = ["1", "2", "3", "4"];
 
+const STORAGE_KEY = "rekishi-kentei-japanese-history-progress-v1";
+const PROGRESS_STATUSES = [
+  { id: "new", label: "未出題" },
+  { id: "miss", label: "ミス" },
+  { id: "hit", label: "ヒット" },
+  { id: "double", label: "ダブル" },
+  { id: "triple", label: "トリプル" }
+];
+
 // =======================
 // 状態
 // =======================
@@ -65,6 +74,9 @@ const state = {
   currentIndex: 0,
   customDistribution: { "★★★": 1, "★★": 2, "★": 1, "無": 1 },
   lastSettings: null,
+  progress: {},
+  progressCommitted: false,
+  progressTransitions: {},
   isLoaded: false
 };
 
@@ -73,12 +85,14 @@ const state = {
 // =======================
 async function init() {
   bindStaticEvents();
+  state.progress = loadProgress();
 
   try {
     const periodResults = await Promise.all(PERIODS.map(loadPeriodQuestions));
     state.allQuestions = periodResults.flat();
 
     validateQuestions(state.allQuestions);
+    pruneProgress();
     renderProblemSets();
 
     state.isLoaded = true;
@@ -87,6 +101,7 @@ async function init() {
 
     updateCustomControls();
     updatePeriodSetAvailability();
+    updateMasterySummary();
     updateStartState();
   } catch (error) {
     const message = error instanceof Error
@@ -341,7 +356,7 @@ function handleSettingsChange(event) {
     updatePeriodSetSummary(event.target.dataset.periodId);
   }
 
-  if (["profile", "period", "problem-set", "count"].includes(event.target.name)) {
+  if (["profile", "period", "problem-set", "progress-status", "count"].includes(event.target.name)) {
     updateStartState();
   }
 }
@@ -421,7 +436,7 @@ function getSelectedRanges() {
     }));
 }
 
-function getFilteredPool() {
+function getScopePool() {
   const ranges = getSelectedRanges();
   const rangeMap = new Map();
 
@@ -443,17 +458,35 @@ function getFilteredPool() {
   });
 }
 
+function getSelectedProgressStatuses() {
+  return [
+    ...document.querySelectorAll('input[name="progress-status"]:checked')
+  ].map(input => input.value);
+}
+
+function getFilteredPool() {
+  const selectedStatuses = new Set(getSelectedProgressStatuses());
+
+  return getScopePool().filter(
+    question => selectedStatuses.has(getQuestionProgressStatus(question.id))
+  );
+}
+
 function updateStartState() {
   if (!state.isLoaded) {
     return;
   }
 
+  const scopePool = getScopePool();
   const pool = getFilteredPool();
   const selectedPeriods = getSelectedPeriodIds();
   const selectedRanges = getSelectedRanges();
+  const selectedStatuses = getSelectedProgressStatuses();
   const profile = document.querySelector('input[name="profile"]:checked')?.value;
   const customIsValid = profile !== "custom" || getCustomTotal() === 5;
 
+  updateMasterySummary();
+  updateStatusFilterCounts(scopePool);
   updatePoolSummary(pool);
   updateAvailableCounts(pool.length);
 
@@ -464,6 +497,7 @@ function updateStartState() {
   const canStart =
     selectedPeriods.length > 0 &&
     selectedRanges.length > 0 &&
+    selectedStatuses.length > 0 &&
     pool.length >= selectedCount &&
     selectedCount > 0 &&
     customIsValid;
@@ -479,6 +513,8 @@ function updateStartState() {
     showStartError("時代を1つ以上選択してください。");
   } else if (selectedRanges.length === 0) {
     showStartError("有効な問題セットを1つ以上選択してください。");
+  } else if (selectedStatuses.length === 0) {
+    showStartError("出題状態を1つ以上選択してください。");
   } else if (!customIsValid) {
     showStartError("カスタム配分の合計を5にしてください。");
   } else if (pool.length < selectedCount) {
@@ -579,6 +615,8 @@ function startExam() {
   }));
   state.answers = {};
   state.currentIndex = 0;
+  state.progressCommitted = false;
+  state.progressTransitions = {};
   state.lastSettings = {
     profile,
     profileLabel: PROFILE_LABELS[profile],
@@ -784,7 +822,7 @@ function showResult() {
   const list = document.getElementById("result-list");
   list.innerHTML = "";
 
-  state.questions.forEach((question, index) => {
+  const outcomes = state.questions.map((question, index) => {
     const answer = state.answers[question.id];
     const isUnanswered = answer === undefined;
     const isCorrect = !isUnanswered && judge(question, answer);
@@ -796,8 +834,39 @@ function showResult() {
       unansweredCount += 1;
     }
 
+    return {
+      question,
+      answer,
+      isUnanswered,
+      isCorrect,
+      index
+    };
+  });
+
+  if (!state.progressCommitted) {
+    const transitions = {};
+
+    outcomes.forEach(({ question, isUnanswered, isCorrect }) => {
+      if (!isUnanswered) {
+        transitions[question.id] = updateQuestionProgress(question.id, isCorrect);
+      }
+    });
+
+    state.progressTransitions = transitions;
+    state.progressCommitted = true;
+    saveProgress();
+  }
+
+  outcomes.forEach(({ question, answer, isCorrect, isUnanswered, index }) => {
     list.appendChild(
-      createResultItem(question, answer, isCorrect, isUnanswered, index)
+      createResultItem(
+        question,
+        answer,
+        isCorrect,
+        isUnanswered,
+        index,
+        state.progressTransitions[question.id]
+      )
     );
   });
 
@@ -818,7 +887,7 @@ function showResult() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function createResultItem(question, answer, isCorrect, isUnanswered, index) {
+function createResultItem(question, answer, isCorrect, isUnanswered, index, progressTransition) {
   const status = isUnanswered
     ? "unanswered"
     : isCorrect
@@ -866,8 +935,35 @@ function createResultItem(question, answer, isCorrect, isUnanswered, index) {
   );
 
   body.append(meta, text, answers);
+
+  if (progressTransition) {
+    body.appendChild(createProgressTransition(progressTransition));
+  }
+
   item.append(badge, body);
   return item;
+}
+
+function createProgressTransition(transition) {
+  const row = document.createElement("div");
+  row.className = "progress-transition";
+  row.setAttribute("aria-label", `習得状況 ${transition.beforeLabel}から${transition.afterLabel}`);
+
+  const before = document.createElement("span");
+  before.className = `progress-tag is-${transition.before}`;
+  before.textContent = transition.beforeLabel;
+
+  const arrow = document.createElement("span");
+  arrow.className = "progress-arrow";
+  arrow.textContent = "→";
+  arrow.setAttribute("aria-hidden", "true");
+
+  const after = document.createElement("span");
+  after.className = `progress-tag is-${transition.after}`;
+  after.textContent = transition.afterLabel;
+
+  row.append(before, arrow, after);
+  return row;
 }
 
 function createAnswerLine(labelText, value, valueClass) {
@@ -880,6 +976,150 @@ function createAnswerLine(labelText, value, valueClass) {
   detail.className = valueClass;
   line.append(label, detail);
   return line;
+}
+
+// =======================
+// 習得状況
+// =======================
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw);
+    const records =
+      parsed && typeof parsed === "object" && parsed.records && typeof parsed.records === "object"
+        ? parsed.records
+        : {};
+
+    return Object.fromEntries(
+      Object.entries(records)
+        .filter(([, value]) => Number.isInteger(value) && value >= 0 && value <= 3)
+    );
+  } catch (error) {
+    console.warn("学習履歴を読み込めませんでした。新規状態で開始します。", error);
+    return {};
+  }
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        records: state.progress
+      })
+    );
+  } catch (error) {
+    console.warn("学習履歴を保存できませんでした。", error);
+  }
+}
+
+function pruneProgress() {
+  const validIds = new Set(state.allQuestions.map(question => question.id));
+  let changed = false;
+
+  Object.keys(state.progress).forEach(questionId => {
+    if (!validIds.has(questionId)) {
+      delete state.progress[questionId];
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveProgress();
+  }
+}
+
+function progressValueToStatus(value) {
+  if (value === 0) {
+    return "miss";
+  }
+  if (value === 1) {
+    return "hit";
+  }
+  if (value === 2) {
+    return "double";
+  }
+  if (value >= 3) {
+    return "triple";
+  }
+  return "new";
+}
+
+function getQuestionProgressStatus(questionId) {
+  return progressValueToStatus(state.progress[questionId]);
+}
+
+function getProgressLabel(status) {
+  return PROGRESS_STATUSES.find(item => item.id === status)?.label || status;
+}
+
+function countByProgressStatus(questions) {
+  const counts = Object.fromEntries(
+    PROGRESS_STATUSES.map(status => [status.id, 0])
+  );
+
+  questions.forEach(question => {
+    counts[getQuestionProgressStatus(question.id)] += 1;
+  });
+
+  return counts;
+}
+
+function updateMasterySummary() {
+  if (!state.isLoaded && state.allQuestions.length === 0) {
+    return;
+  }
+
+  const counts = countByProgressStatus(state.allQuestions);
+
+  PROGRESS_STATUSES.forEach(status => {
+    const output = document.getElementById(`mastery-count-${status.id}`);
+
+    if (output) {
+      output.textContent = counts[status.id].toLocaleString("ja-JP");
+    }
+  });
+}
+
+function updateStatusFilterCounts(scopePool) {
+  const counts = countByProgressStatus(scopePool);
+
+  PROGRESS_STATUSES.forEach(status => {
+    const output = document.getElementById(`status-count-${status.id}`);
+
+    if (output) {
+      output.textContent = counts[status.id].toLocaleString("ja-JP");
+    }
+  });
+}
+
+function updateQuestionProgress(questionId, isCorrect) {
+  const before = getQuestionProgressStatus(questionId);
+  const current = state.progress[questionId];
+
+  if (isCorrect) {
+    state.progress[questionId] =
+      Number.isInteger(current) && current >= 1
+        ? Math.min(3, current + 1)
+        : 1;
+  } else {
+    state.progress[questionId] = 0;
+  }
+
+  const after = getQuestionProgressStatus(questionId);
+
+  return {
+    before,
+    after,
+    beforeLabel: getProgressLabel(before),
+    afterLabel: getProgressLabel(after)
+  };
 }
 
 // =======================
@@ -925,8 +1165,11 @@ function backToStart() {
   state.questions = [];
   state.answers = {};
   state.currentIndex = 0;
+  state.progressCommitted = false;
+  state.progressTransitions = {};
 
   showScreen("screen-start");
+  updateMasterySummary();
   updateStartState();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
