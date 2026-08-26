@@ -973,6 +973,15 @@ input {
    習得状況・出題状態
 ========================= */
 
+/* 京都検定・国内旅行業務取扱管理者版と共通の習得段階カラー */
+:root {
+  --stage-miss: #e08b8b;      /* 退紅 */
+  --stage-hit: #7fa7c4;       /* 縹・水色 */
+  --stage-double: #93c384;    /* 若苗・緑 */
+  --stage-triple: var(--gold); /* 金 */
+  --stage-new: #6e7280;       /* 鈍色 */
+}
+
 .mastery-reset-btn {
   margin-left: auto;
   white-space: nowrap;
@@ -1011,14 +1020,24 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
-.mastery-stat[data-status="miss"] .mastery-count {
-  color: var(--ng);
+.mastery-stat[data-status="new"] .mastery-count {
+  color: var(--text);
 }
 
-.mastery-stat[data-status="hit"] .mastery-count,
-.mastery-stat[data-status="double"] .mastery-count,
+.mastery-stat[data-status="miss"] .mastery-count {
+  color: var(--stage-miss);
+}
+
+.mastery-stat[data-status="hit"] .mastery-count {
+  color: var(--stage-hit);
+}
+
+.mastery-stat[data-status="double"] .mastery-count {
+  color: var(--stage-double);
+}
+
 .mastery-stat[data-status="triple"] .mastery-count {
-  color: var(--gold-bright);
+  color: var(--stage-triple);
 }
 
 .status-chip-group {
@@ -1047,8 +1066,37 @@ input {
 }
 
 .status-chip-group input:checked + .status-chip .status-count {
-  color: var(--gold-bright);
-  background: rgba(201, 168, 106, 0.13);
+  color: inherit;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* 出題状態チップも習得段階の色に合わせる */
+#status-miss:checked + .status-chip {
+  color: var(--stage-miss);
+  border-color: rgba(224, 139, 139, 0.52);
+  background: rgba(224, 139, 139, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(224, 139, 139, 0.34);
+}
+
+#status-hit:checked + .status-chip {
+  color: var(--stage-hit);
+  border-color: rgba(127, 167, 196, 0.55);
+  background: rgba(127, 167, 196, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(127, 167, 196, 0.34);
+}
+
+#status-double:checked + .status-chip {
+  color: var(--stage-double);
+  border-color: rgba(147, 195, 132, 0.55);
+  background: rgba(147, 195, 132, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(147, 195, 132, 0.34);
+}
+
+#status-triple:checked + .status-chip {
+  color: var(--stage-triple);
+  border-color: var(--gold-line);
+  background: var(--gold-dim);
+  box-shadow: inset 0 0 0 1px var(--gold-line);
 }
 
 /* 結果画面の習得状況遷移 */
@@ -1075,14 +1123,25 @@ input {
 }
 
 .progress-tag.is-miss {
-  color: var(--ng);
-  border-color: rgba(239, 154, 154, 0.45);
+  color: var(--stage-miss);
+  border-color: rgba(224, 139, 139, 0.45);
+  background: rgba(224, 139, 139, 0.10);
 }
 
-.progress-tag.is-hit,
-.progress-tag.is-double,
+.progress-tag.is-hit {
+  color: var(--stage-hit);
+  border-color: rgba(127, 167, 196, 0.50);
+  background: rgba(127, 167, 196, 0.10);
+}
+
+.progress-tag.is-double {
+  color: var(--stage-double);
+  border-color: rgba(147, 195, 132, 0.50);
+  background: rgba(147, 195, 132, 0.10);
+}
+
 .progress-tag.is-triple {
-  color: var(--gold-bright);
+  color: var(--stage-triple);
   border-color: var(--gold-line);
   background: var(--gold-dim);
 }
