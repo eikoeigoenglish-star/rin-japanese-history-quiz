@@ -970,16 +970,30 @@ input {
 
 
 /* =========================
-   習得状況・出題状態
+   進捗・出題状態
 ========================= */
 
 /* 京都検定・国内旅行業務取扱管理者版と共通の習得段階カラー */
 :root {
-  --stage-miss: #e08b8b;      /* 退紅 */
-  --stage-hit: #7fa7c4;       /* 縹・水色 */
-  --stage-double: #93c384;    /* 若苗・緑 */
+  --stage-miss: #e08b8b;       /* 退紅 */
+  --stage-hit: #7fa7c4;        /* 縹・水色 */
+  --stage-double: #93c384;     /* 若苗・緑 */
   --stage-triple: var(--gold); /* 金 */
-  --stage-new: #6e7280;       /* 鈍色 */
+  --stage-new: #6e7280;        /* 鈍色 */
+}
+
+.mastery-panel .panel-head {
+  align-items: center;
+}
+
+.mastery-headline {
+  margin: 0;
+  color: var(--gold-bright);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 .mastery-reset-btn {
@@ -987,57 +1001,65 @@ input {
   white-space: nowrap;
 }
 
-.mastery-summary {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.mastery-stat {
+.mastery-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-width: 0;
-  padding: 12px 14px;
-  background: var(--surface-3);
+  height: 14px;
+  margin: 4px 0 16px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
+  border-radius: 999px;
+  background-color: var(--surface-3);
+  overflow: hidden;
 }
 
-.mastery-label {
-  min-width: 0;
+.mastery-seg {
+  width: 0%;
+  height: 100%;
+  transition: width 0.45s ease;
+}
+
+.seg-triple { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); }
+.seg-double { background-color: var(--stage-double); }
+.seg-hit { background-color: var(--stage-hit); }
+.seg-miss { background-color: var(--stage-miss); }
+.seg-new { background-color: var(--stage-new); }
+
+.mastery-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   color: var(--text-dim);
-  font-size: 0.86rem;
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: 0.82rem;
 }
 
-.mastery-count {
+.mastery-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mastery-legend b {
   color: var(--text);
-  font-size: 0.95rem;
-  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.mastery-stat[data-status="new"] .mastery-count {
-  color: var(--text);
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
 }
 
-.mastery-stat[data-status="miss"] .mastery-count {
-  color: var(--stage-miss);
-}
+.dot-triple { background-color: var(--stage-triple); }
+.dot-double { background-color: var(--stage-double); }
+.dot-hit { background-color: var(--stage-hit); }
+.dot-miss { background-color: var(--stage-miss); }
+.dot-new { background-color: var(--stage-new); }
 
-.mastery-stat[data-status="hit"] .mastery-count {
-  color: var(--stage-hit);
-}
-
-.mastery-stat[data-status="double"] .mastery-count {
-  color: var(--stage-double);
-}
-
-.mastery-stat[data-status="triple"] .mastery-count {
-  color: var(--stage-triple);
+.mastery-note {
+  margin: 14px 0 0;
 }
 
 .status-chip-group {
@@ -1056,7 +1078,7 @@ input {
   min-width: 2em;
   min-height: 2em;
   padding: 0 0.45em;
-  color: var(--text-faint);
+  color: inherit;
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1;
@@ -1065,41 +1087,13 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
+/* 出題状態は他のフィルターチップと同じ金色の選択表現を使う。 */
 .status-chip-group input:checked + .status-chip .status-count {
   color: inherit;
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* 出題状態チップも習得段階の色に合わせる */
-#status-miss:checked + .status-chip {
-  color: var(--stage-miss);
-  border-color: rgba(224, 139, 139, 0.52);
-  background: rgba(224, 139, 139, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(224, 139, 139, 0.34);
-}
-
-#status-hit:checked + .status-chip {
-  color: var(--stage-hit);
-  border-color: rgba(127, 167, 196, 0.55);
-  background: rgba(127, 167, 196, 0.13);
-  box-shadow: inset 0 0 0 1px rgba(127, 167, 196, 0.34);
-}
-
-#status-double:checked + .status-chip {
-  color: var(--stage-double);
-  border-color: rgba(147, 195, 132, 0.55);
-  background: rgba(147, 195, 132, 0.13);
-  box-shadow: inset 0 0 0 1px rgba(147, 195, 132, 0.34);
-}
-
-#status-triple:checked + .status-chip {
-  color: var(--stage-triple);
-  border-color: var(--gold-line);
-  background: var(--gold-dim);
-  box-shadow: inset 0 0 0 1px var(--gold-line);
-}
-
-/* 結果画面の習得状況遷移 */
+/* 結果画面の習得状況遷移タグは段階色を維持する。 */
 .progress-transition {
   display: flex;
   align-items: center;
@@ -1113,55 +1107,34 @@ input {
   align-items: center;
   min-height: 28px;
   padding: 3px 10px;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
-  background: var(--surface-3);
-  border: 1px solid var(--line-strong);
+  border: 1px solid currentColor;
   border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-.progress-tag.is-miss {
-  color: var(--stage-miss);
-  border-color: rgba(224, 139, 139, 0.45);
-  background: rgba(224, 139, 139, 0.10);
-}
-
-.progress-tag.is-hit {
-  color: var(--stage-hit);
-  border-color: rgba(127, 167, 196, 0.50);
-  background: rgba(127, 167, 196, 0.10);
-}
-
-.progress-tag.is-double {
-  color: var(--stage-double);
-  border-color: rgba(147, 195, 132, 0.50);
-  background: rgba(147, 195, 132, 0.10);
-}
-
-.progress-tag.is-triple {
-  color: var(--stage-triple);
-  border-color: var(--gold-line);
-  background: var(--gold-dim);
-}
+.progress-tag.is-new { color: var(--text-faint); }
+.progress-tag.is-miss { color: var(--stage-miss); }
+.progress-tag.is-hit { color: var(--stage-hit); }
+.progress-tag.is-double { color: var(--stage-double); }
+.progress-tag.is-triple { color: var(--stage-triple); }
 
 .progress-arrow {
   color: var(--text-faint);
-  font-size: 0.8rem;
 }
 
-/* =========================
-   レスポンシブ
-========================= */
+.btn-small {
+  padding: 5px 12px;
+  font-size: 0.75rem;
+}
+
 @media (max-width: 760px) {
   .profile-grid {
     grid-template-columns: 1fr;
   }
 
-  .mastery-summary {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 
   .profile-card {
     min-height: 88px;
@@ -1173,9 +1146,6 @@ input {
 }
 
 @media (max-width: 640px) {
-  .mastery-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 
   .chip {
     flex: 1 1 calc(33.333% - 7px);
@@ -1237,13 +1207,6 @@ input {
 }
 
 @media (max-width: 430px) {
-  .mastery-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .mastery-stat {
-    padding: 10px 12px;
-  }
 
   .chip {
     flex-basis: calc(50% - 5px);

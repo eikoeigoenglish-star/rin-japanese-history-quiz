@@ -1078,6 +1078,7 @@ function updateMasterySummary() {
   }
 
   const counts = countByProgressStatus(state.allQuestions);
+  const total = state.allQuestions.length;
 
   PROGRESS_STATUSES.forEach(status => {
     const output = document.getElementById(`mastery-count-${status.id}`);
@@ -1085,7 +1086,34 @@ function updateMasterySummary() {
     if (output) {
       output.textContent = counts[status.id].toLocaleString("ja-JP");
     }
+
+    const segment = document.getElementById(`mastery-seg-${status.id}`);
+    if (segment) {
+      const percent = total > 0 ? (counts[status.id] / total) * 100 : 0;
+      segment.style.width = `${percent}%`;
+    }
   });
+
+  const triplePercent = total > 0
+    ? Math.round((counts.triple / total) * 100)
+    : 0;
+
+  const headline = document.getElementById("mastery-headline");
+  if (headline) {
+    headline.textContent =
+      `トリプル ${counts.triple.toLocaleString("ja-JP")} / ${total.toLocaleString("ja-JP")}　（${triplePercent}%）`;
+  }
+
+  const bar = document.getElementById("mastery-bar");
+  if (bar) {
+    bar.setAttribute("aria-valuenow", String(triplePercent));
+    bar.setAttribute(
+      "aria-valuetext",
+      `全${total.toLocaleString("ja-JP")}問中、トリプル${counts.triple.toLocaleString("ja-JP")}問、` +
+      `ダブル${counts.double.toLocaleString("ja-JP")}問、ヒット${counts.hit.toLocaleString("ja-JP")}問、` +
+      `ミス${counts.miss.toLocaleString("ja-JP")}問、未出題${counts.new.toLocaleString("ja-JP")}問`
+    );
+  }
 }
 
 function updateStatusFilterCounts(scopePool) {
@@ -1110,7 +1138,7 @@ function resetProgress() {
   }
 
   const ok = window.confirm(
-    `${learnedCount.toLocaleString("ja-JP")}問分の習得状況をすべて消して、全問を未出題に戻します。よろしいですか。`
+    `${learnedCount.toLocaleString("ja-JP")}問分の進捗をすべて消して、全問を未出題に戻します。よろしいですか。`
   );
 
   if (!ok) {
